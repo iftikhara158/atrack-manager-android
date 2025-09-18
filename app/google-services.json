@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "165785239481",
+    "project_id": "atrack-manager-andriod",
+    "storage_bucket": "atrack-manager-andriod.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:165785239481:android:02c9617473d792a7d70068",
+        "android_client_info": {
+          "package_name": "com.atrack.manager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrlE3zTLprsfyEDJnh07qORmjB0yHizwY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
