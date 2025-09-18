@@ -1,10 +1,7 @@
 name: Build Android App
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,8 +17,8 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Gradle Wrapper
-        run: ./gradlew tasks
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug
