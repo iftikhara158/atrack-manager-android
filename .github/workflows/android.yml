@@ -1,4 +1,4 @@
-name: Build Android App
+name: Build & Sign Android App
 
 on:
   workflow_dispatch:
@@ -17,16 +17,24 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Build Debug APK
-        run: gradle assembleDebug
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
+          echo "KEYSTORE=$PWD/release.keystore" >> $GITHUB_ENV
 
-      - name: Build Release AAB
-        run: gradle bundleRelease
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-      - name: Upload APK & AAB
+      - name: Build Signed Release AAB
+        run: ./gradlew bundleRelease
+
+      - name: Build Signed Release APK
+        run: ./gradlew assembleRelease
+
+      - name: Upload Signed APK & AAB
         uses: actions/upload-artifact@v4
         with:
-          name: atrack-manager-builds
+          name: atrack-manager-signed-builds
           path: |
-            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/release/*.apk
             app/build/outputs/bundle/release/*.aab
