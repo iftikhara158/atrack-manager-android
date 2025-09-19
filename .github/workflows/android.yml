@@ -23,7 +23,7 @@ jobs:
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "$KEYSTORE_BASE64" | base64 --decode > app/release.keystore
-            echo "KEYSTORE=$PWD/release.keystore" >> $GITHUB_ENV
+            echo "KEYSTORE=$PWD/app/release.keystore" >> $GITHUB_ENV
           else
             echo "No KEYSTORE_BASE64 secret provided; signing will fail if required."
           fi
