@@ -3,9 +3,18 @@ name: Build Android App
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # make signing secrets available to all steps (do NOT hardcode values here; these reference repo secrets)
+    env:
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_PASSWORD:      ${{ secrets.KEY_PASSWORD }}
+      KEYSTORE_ALIAS:    ${{ secrets.KEYSTORE_ALIAS }}
 
     steps:
       - name: Checkout
@@ -22,10 +31,13 @@ jobs:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
+            mkdir -p app
             echo "$KEYSTORE_BASE64" | base64 --decode > app/release.keystore
+            # export path for Gradle / build.gradle to pick up via System.getenv("KEYSTORE")
             echo "KEYSTORE=$PWD/app/release.keystore" >> $GITHUB_ENV
           else
             echo "No KEYSTORE_BASE64 secret provided; signing will fail if required."
+            exit 1
           fi
 
       - name: Install Gradle 8.0.2
@@ -34,23 +46,26 @@ jobs:
           mkdir -p $HOME/gradle-dist
           curl -sSLo gradle.zip https://services.gradle.org/distributions/gradle-${GRADLE_VER}-bin.zip
           unzip -q gradle.zip -d $HOME/gradle-dist
-          export GRADLE_HOME=$(ls -d $HOME/gradle-dist/gradle-* | head -n1)
+          GRADLE_HOME=$(ls -d $HOME/gradle-dist/gradle-* | head -n1)
           echo "GRADLE_HOME=$GRADLE_HOME" >> $GITHUB_ENV
         shell: bash
 
       - name: Build Debug APK
-        run: |
-          $GRADLE_HOME/bin/gradle --no-daemon assembleDebug
-        env:
-          KEYSTORE: ${{ env.KEYSTORE }}
+        run: $GRADLE_HOME/bin/gradle --no-daemon assembleDebug
 
       - name: Build Release AAB
-        run: |
-          $GRADLE_HOME/bin/gradle --no-daemon bundleRelease
-        env:
-          KEYSTORE: ${{ env.KEYSTORE }}
+        run: $GRADLE_HOME/bin/gradle --no-daemon bundleRelease
 
-      - name: Create GitHub Release
+      - name: Upload APK & AAB (artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: atrack-manager-builds
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/bundle/release/*.aab
+
+      - name: Create GitHub Release (attach APK + AAB)
+        id: create_release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ github.run_number }}
