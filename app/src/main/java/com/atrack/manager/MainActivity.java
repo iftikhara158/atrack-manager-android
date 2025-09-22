@@ -10,29 +10,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // use our layout with logo + WebView
+        setContentView(R.layout.activity_main); // WebView only
 
         WebView webView = findViewById(R.id.webView);
         WebSettings webSettings = webView.getSettings();
 
-        // ✅ Must-haves
-        webSettings.setJavaScriptEnabled(true);        // enable JS
-        webSettings.setDomStorageEnabled(true);        // enable local/session storage
-        webSettings.setAllowFileAccess(true);          // allow loading files
-        webSettings.setAllowContentAccess(true);       // allow content access
-        webSettings.setLoadsImagesAutomatically(true); // ensure images load
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setAllowFileAccess(true);
+        webSettings.setAllowContentAccess(true);
+        webSettings.setLoadsImagesAutomatically(true);
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-
-        // ✅ Important: allow HTTPS page to load custom.js
         webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
-        // Debugging (inspect via chrome://inspect)
         WebView.setWebContentsDebuggingEnabled(true);
-
-        // Keep navigation inside the WebView
         webView.setWebViewClient(new WebViewClient());
 
-        // Load your server
         webView.loadUrl("https://server.atrack.com.pk");
     }
 }
