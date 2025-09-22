@@ -10,7 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # make signing secrets available to all steps (do NOT hardcode values here; these reference repo secrets)
     env:
       KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
       KEY_PASSWORD:      ${{ secrets.KEY_PASSWORD }}
@@ -33,12 +32,16 @@ jobs:
           if [ -n "$KEYSTORE_BASE64" ]; then
             mkdir -p app
             echo "$KEYSTORE_BASE64" | base64 --decode > app/release.keystore
-            # export path for Gradle / build.gradle to pick up via System.getenv("KEYSTORE")
             echo "KEYSTORE=$PWD/app/release.keystore" >> $GITHUB_ENV
           else
             echo "No KEYSTORE_BASE64 secret provided; signing will fail if required."
             exit 1
           fi
+
+      - name: Install Android SDK 35
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platforms;android-35" "platform-tools" "build-tools;35.0.0"
 
       - name: Install Gradle 8.0.2
         run: |
@@ -49,6 +52,9 @@ jobs:
           GRADLE_HOME=$(ls -d $HOME/gradle-dist/gradle-* | head -n1)
           echo "GRADLE_HOME=$GRADLE_HOME" >> $GITHUB_ENV
         shell: bash
+
+      - name: Clean Gradle Build
+        run: $GRADLE_HOME/bin/gradle --no-daemon clean
 
       - name: Build Debug APK
         run: $GRADLE_HOME/bin/gradle --no-daemon assembleDebug
