@@ -1,19 +1,28 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.atrack.manager">
 
+    <!-- Needed for WebView to load your server -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Optional but recommended if you plan to load external content -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:label="aTrack Manager"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".MainActivity"
+
+        <!-- Main Activity -->
+        <activity
+            android:name=".MainActivity"
             android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 </manifest>
