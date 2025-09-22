@@ -27,5 +27,11 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebViewClient(new WebViewClient());
 
         webView.loadUrl("https://server.atrack.com.pk");
+
+        
+        // 🔥 Start background service
+        Intent serviceIntent = new Intent(this, MyForegroundService.class);
+        startForegroundService(serviceIntent);
+        
     }
 }
