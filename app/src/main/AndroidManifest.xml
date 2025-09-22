@@ -7,6 +7,9 @@
     <!-- Optional but recommended if you plan to load external content -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- Needed for running a foreground service -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <application
         android:label="aTrack Manager"
         android:icon="@mipmap/ic_launcher"
@@ -17,12 +20,17 @@
         <activity
             android:name=".MainActivity"
             android:exported="true">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Foreground Service -->
+        <service
+            android:name=".MyForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback|dataSync" />
 
     </application>
 </manifest>
