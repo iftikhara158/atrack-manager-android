@@ -78,12 +78,29 @@ jobs:
           name: release-aab
           path: app/build/outputs/bundle/release/*.aab
 
+      - name: Set Release Tag
+        id: tag
+        run: |
+          # Start from 101 if first release
+          START=101
+
+          # Get the last release tag number, default v100 if none exists
+          LAST_TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null || echo "v100")
+
+          # Extract numeric part
+          LAST_NUM=$(echo $LAST_TAG | grep -oE '[0-9]+')
+
+          # Increment
+          NEXT_NUM=$((LAST_NUM + 1))
+          echo "NEXT_TAG=v$NEXT_NUM"
+          echo "NEXT_TAG=v$NEXT_NUM" >> $GITHUB_ENV
+
       - name: Create GitHub Release
         id: create_release
         uses: ncipollo/release-action@v1
         with:
-          tag: v${{ github.run_number }}
-          name: Release ${{ github.run_number }}
+          tag: ${{ env.NEXT_TAG }}
+          name: Release ${{ env.NEXT_TAG }}
           draft: false
           prerelease: false
           token: ${{ secrets.REPO_PAT }}
@@ -92,7 +109,7 @@ jobs:
         uses: softprops/action-gh-release@v2.3.2
         with:
           files: app/build/outputs/apk/release/*.apk
-          tag_name: v${{ github.run_number }}   # <-- Fixed: explicitly provide tag
+          tag_name: ${{ env.NEXT_TAG }}
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_PAT }}
 
@@ -100,6 +117,6 @@ jobs:
         uses: softprops/action-gh-release@v2.3.2
         with:
           files: app/build/outputs/bundle/release/*.aab
-          tag_name: v${{ github.run_number }}   # <-- Fixed: explicitly provide tag
+          tag_name: ${{ env.NEXT_TAG }}
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_PAT }}
