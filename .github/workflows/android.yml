@@ -86,17 +86,18 @@ jobs:
           name: Release ${{ github.run_number }}
           draft: false
           prerelease: false
+          token: ${{ secrets.REPO_PAT }}   # <-- Use PAT here instead of default GITHUB_TOKEN
 
       - name: Upload APK to GitHub Release
         uses: softprops/action-gh-release@v2.3.2
         with:
           files: app/build/outputs/apk/release/*.apk
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REPO_PAT }}  # <-- Use same PAT
 
       - name: Upload AAB to GitHub Release
         uses: softprops/action-gh-release@v2.3.2
         with:
           files: app/build/outputs/bundle/release/*.aab
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REPO_PAT }}  # <-- Use same PAT
