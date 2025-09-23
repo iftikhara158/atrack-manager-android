@@ -81,14 +81,14 @@ jobs:
           prerelease: false
 
       - name: Upload APK to GitHub Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v2.3.2
         with:
           files: app/build/outputs/apk/release/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload AAB to GitHub Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v2.3.2
         with:
           files: app/build/outputs/bundle/release/*.aab
         env:
