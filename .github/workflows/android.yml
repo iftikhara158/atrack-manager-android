@@ -81,10 +81,10 @@ jobs:
       - name: Set Release Tag
         id: tag
         run: |
-          # Starting number
+          # Start from 101 if no previous release exists
           START=101
 
-          # Get last release tag
+          # Get last release tag (default v100 if none)
           LAST_TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null || echo "v100")
 
           # Extract numeric part
@@ -92,7 +92,6 @@ jobs:
 
           # Increment
           NEXT_NUM=$((LAST_NUM + 1))
-
           echo "NEXT_TAG=v$NEXT_NUM"
           echo "NEXT_TAG=v$NEXT_NUM" >> $GITHUB_ENV
 
@@ -111,7 +110,6 @@ jobs:
         with:
           files: app/build/outputs/apk/release/*.apk
           tag_name: ${{ env.NEXT_TAG }}
-          existing_release: true
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_PAT }}
 
@@ -120,6 +118,5 @@ jobs:
         with:
           files: app/build/outputs/bundle/release/*.aab
           tag_name: ${{ env.NEXT_TAG }}
-          existing_release: true
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_PAT }}
