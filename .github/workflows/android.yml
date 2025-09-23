@@ -31,8 +31,10 @@ jobs:
 
       - name: Install SDK packages
         run: |
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+          sdkmanager --version
           yes | sdkmanager --licenses
-          sdkmanager --install "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+          sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
         env:
           ANDROID_HOME: /home/runner/android-sdk
           ANDROID_SDK_ROOT: /home/runner/android-sdk
@@ -58,13 +60,13 @@ jobs:
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
 
       - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: release-apk
           path: app/build/outputs/apk/release/*.apk
 
       - name: Upload AAB Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: release-aab
           path: app/build/outputs/bundle/release/*.aab
@@ -78,15 +80,15 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload APK to Release
-        uses: softprops/action-gh-release@v1
+      - name: Upload APK to GitHub Release
+        uses: softprops/action-gh-release@v4
         with:
           files: app/build/outputs/apk/release/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload AAB to Release
-        uses: softprops/action-gh-release@v1
+      - name: Upload AAB to GitHub Release
+        uses: softprops/action-gh-release@v4
         with:
           files: app/build/outputs/bundle/release/*.aab
         env:
