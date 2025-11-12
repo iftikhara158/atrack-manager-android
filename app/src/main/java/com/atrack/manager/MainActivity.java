@@ -13,51 +13,63 @@ import android.webkit.WebViewClient;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private WebView webView;
-    // Put your web domain here so in-app navigation stays in webview
     private static final String HOME_HOST = "server.atrack.com.pk";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Make the app layout edge-to-edge but still handle safe insets
+        getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(android.graphics.Color.TRANSPARENT);
+        WindowInsetsControllerCompat controller =
+                new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
+        controller.setAppearanceLightStatusBars(true);
+        controller.setAppearanceLightNavigationBars(true);
+
         setContentView(R.layout.activity_main);
 
+        CoordinatorLayout rootLayout = findViewById(R.id.rootLayout);
         webView = findViewById(R.id.webView);
 
+        // Apply padding equal to system navigation area (gesture/nav bar)
+        ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
+            int bottomInset = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+            v.setPadding(0, 0, 0, bottomInset);
+            return insets;
+        });
+
         WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true); // required for many web apps
+        webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setAllowContentAccess(true);
         webSettings.setLoadsImagesAutomatically(true);
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-
-        // Important for responsive pages
         webSettings.setUseWideViewPort(true);
         webSettings.setLoadWithOverviewMode(true);
-
-        // Optional - zoom support
         webSettings.setSupportZoom(true);
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
 
-        // Improve compatibility for links that open new windows or call window.open
         webView.setWebChromeClient(new WebChromeClient());
 
-        // Custom WebViewClient to intercept intent://, geo:, maps and external links
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                final String url = request.getUrl().toString();
-                return handleUrl(url);
+                return handleUrl(request.getUrl().toString());
             }
 
-            // For older devices (API < 24)
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 return handleUrl(url);
@@ -66,8 +78,9 @@ public class MainActivity extends AppCompatActivity {
             private boolean handleUrl(String url) {
                 try {
                     Uri uri = Uri.parse(url);
+                    String host = uri.getHost() == null ? "" : uri.getHost();
 
-                    // Handle intent:// URIs
+                    // intent:// URIs
                     if (url.startsWith("intent://")) {
                         try {
                             Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
@@ -76,40 +89,37 @@ public class MainActivity extends AppCompatActivity {
                                 return true;
                             }
                         } catch (Exception e) {
-                            Log.w(TAG, "Could not parse intent:// uri", e);
-                            // fallback: open as browser
+                            Log.w(TAG, "Could not parse intent:// URI", e);
                             openExternal(url);
                             return true;
                         }
                     }
 
-                    // Handle geo: URIs (maps)
+                    // geo: URIs
                     if ("geo".equals(uri.getScheme())) {
                         Intent mapIntent = new Intent(Intent.ACTION_VIEW, uri);
                         startActivity(mapIntent);
                         return true;
                     }
 
-                    // Common google maps link forms
-                    String host = uri.getHost() == null ? "" : uri.getHost();
+                    // Google Maps links
                     if (host.contains("google.com") && url.contains("/maps")) {
                         Intent mapIntent = new Intent(Intent.ACTION_VIEW, uri);
                         startActivity(mapIntent);
                         return true;
                     }
                     if (host.contains("maps.app.goo")) {
-                        // e.g. short links
                         Intent mapIntent = new Intent(Intent.ACTION_VIEW, uri);
                         startActivity(mapIntent);
                         return true;
                     }
 
-                    // If the link points to your domain, keep it in the WebView
+                    // Keep links from your own domain inside WebView
                     if (host.equalsIgnoreCase(HOME_HOST) || host.endsWith("." + HOME_HOST)) {
-                        return false; // let WebView load it
+                        return false;
                     }
 
-                    // Otherwise open external browser/app
+                    // External links -> open outside
                     openExternal(url);
                     return true;
 
@@ -117,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.w(TAG, "No activity to handle URL: " + url, ex);
                     return false;
                 } catch (Exception e) {
-                    Log.e(TAG, "Error handling url: " + url, e);
+                    Log.e(TAG, "Error handling URL: " + url, e);
                     return false;
                 }
             }
@@ -128,16 +138,14 @@ public class MainActivity extends AppCompatActivity {
                     i.setData(Uri.parse(url));
                     startActivity(i);
                 } catch (ActivityNotFoundException e) {
-                    Log.w(TAG, "No app to open url: " + url, e);
+                    Log.w(TAG, "No app to open URL: " + url, e);
                 }
             }
         });
 
-        // load your site
         webView.loadUrl("https://server.atrack.com.pk");
     }
 
-    // Back button navigates WebView history instead of finishing activity
     @Override
     public void onBackPressed() {
         if (webView != null && webView.canGoBack()) {
